@@ -106,20 +106,22 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
             return;
         }
         
-        Console.WriteLine($"Дни рождения сегодня и ближайшие {upcomingDaysCount} дней ({today:dd.MM.yyyy}–{today.AddDays(upcomingDaysCount):dd.MM.yyyy}):");
-        for (int i = 0; i < birthdays.Count; i++)
-        {
-            var upcomingBirthday = birthdays[i];
-            var nextBirthday = new DateTime(today.Year, upcomingBirthday.Date.Month, upcomingBirthday.Date.Day);
-            if (nextBirthday < today)
+        
+        string header = $"Дни рождения сегодня и ближайшие {upcomingDaysCount} дней ({today:dd.MM.yyyy}–{today.AddDays(upcomingDaysCount):dd.MM.yyyy}):";
+        Console.WriteLine(header);
+        Console.WriteLine();
+        
+        DisplayPaginated(
+            birthdays,
+            b =>
             {
-                nextBirthday = nextBirthday.AddYears(1);
-            }
-            int delta = (nextBirthday - today).Days;
-            string when = delta == 0 ? "сегодня" : $"через {delta} дн.";
-
-            Console.WriteLine($"{i + 1}. {upcomingBirthday.Name} - {upcomingBirthday.Date:dd MMMM yyyy} ({when})");
-        }
+                var next = new DateTime(today.Year, b.Date.Month, b.Date.Day);
+                if (next < today) 
+                    next = next.AddYears(1);
+                int delta = (next - today).Days;
+                string when = delta == 0 ? "сегодня" : $"через {delta} дн.";
+                return $"{b.Name} - {b.Date:dd MMMM yyyy} ({when})";
+            });
     }
     
     public void DisplayUpcomingBirthdays(List<Birthday> birthdays)
@@ -127,30 +129,41 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
     
     public void DisplayPaginatedBirthdays(List<Birthday> birthdays, int pageSize = 10)
     {
-        if (birthdays.Count == 0)
+        DisplayPaginated(
+            birthdays, 
+            b => $"{b.Name} - {b.Date:dd MMMM yyyy}",
+            pageSize);
+    }
+    
+    public void DisplayPaginated<T>(
+        List<T> items,
+        Func<T,string> formatter,
+        int pageSize = 10)
+    {
+        if (items == null || items.Count == 0)
         {
             Console.WriteLine("Нечего отображать — список пуст.");
             return;
         }
-        
-        int totalItems = birthdays.Count;
-        int totalPages = (totalItems + pageSize - 1) / pageSize;
+
+        int totalItems  = items.Count;
+        int totalPages  = (totalItems + pageSize - 1) / pageSize;
         int currentPage = 0;
-        
+
         while (true)
         {
             Console.Clear();
-            Console.WriteLine($"Страница {currentPage + 1}/{totalPages} — записей всего {totalItems}\n");
-            
-            var pageItems = birthdays.Skip(currentPage * pageSize).Take(pageSize);
-            
+            Console.WriteLine($"Страница {currentPage + 1}/{totalPages} — всего записей: {totalItems}\n");
+
+            var pageItems = items.Skip(currentPage * pageSize).Take(pageSize);
+
             int itemNumber = currentPage * pageSize;
-            foreach (var b in pageItems)
+            foreach (var item in pageItems)
             {
-                Console.WriteLine($"{++itemNumber}. {b}");
+                Console.WriteLine($"{++itemNumber}. {formatter(item)}");
             }
-            
-            Console.WriteLine("\n[N] — сдедующая страница, [P] — предыдущая страница, [Q] — выход");
+
+            Console.WriteLine("\n[N] — следующая, [P] — предыдущая, [Q] — выход");
             var key = Console.ReadKey(true).Key;
             if (key == ConsoleKey.N && currentPage < totalPages - 1)
             {

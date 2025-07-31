@@ -10,4 +10,5 @@ public interface IUserInterfaceService
     void DisplayUpcomingBirthdays(List<Birthday> birthdays);
     void DisplayUpcomingBirthdays(List<Birthday> birthdays, int upcomingDaysCount);
     void DisplayPaginatedBirthdays(List<Birthday> birthdays, int pageSize);
+    void DisplayPaginated<T>(List<T> items, Func<T,string> formatter, int pageSize);
 }
