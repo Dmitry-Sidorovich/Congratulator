@@ -9,4 +9,16 @@ public class Birthday(string name  = "", DateTime date = default)
     {
         return $"{Name} - {Date:dd MMMM yyyy}";
     }
+    
+    public int Age
+    {
+        get
+        {
+            var today = DateTime.Today;
+            int age = today.Year - Date.Year;
+            if (today < new DateTime(today.Year, Date.Month, Date.Day))
+                age--;
+            return age;
+        }
+    }
 }

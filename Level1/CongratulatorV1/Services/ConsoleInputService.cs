@@ -75,14 +75,18 @@ public static class ConsoleInputService
             if (!int.TryParse(Console.ReadLine(), out int answer))
             {
                 Console.WriteLine("Некорректный ввод. Введите 1 или 0.");
+                Console.ReadKey();
+                Console.Clear();
                 continue;
             }
 
             switch (answer)
             {
                 case 1:
+                    Console.Clear();
                     return true;
                 case 0:
+                    Console.WriteLine("Завершение..");
                     return false;
                 default:
                     Console.WriteLine("Пожалуйста, введите 1 или 0.");
@@ -128,6 +132,7 @@ public static class ConsoleInputService
             if (!int.TryParse(Console.ReadLine(), out index))
             {
                 Console.WriteLine("Некорректный номер. Попробуйте снова или нажмите 0 для выхода.");
+                Console.ReadKey();
                 continue;
             }
 
