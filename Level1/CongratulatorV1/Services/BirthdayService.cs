@@ -80,7 +80,7 @@ public class BirthdayService : IBirthdayService
     public List<Birthday> GetUpcomingBirthdays(List<Birthday> birthdays, int upcomingDaysCount)
     {
         var today = DateTime.Today;
-
+        
         return birthdays.Select(birthday =>
             {
                 var nextBirthday = new DateTime(today.Year, birthday.Date.Month, birthday.Date.Day);

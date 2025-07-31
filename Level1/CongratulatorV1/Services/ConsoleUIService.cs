@@ -13,7 +13,7 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
         Console.Clear();
         Console.WriteLine("Добро пожаловать в Поздравлятор!\n");
 
-        if (jsonDataRepository.DataFileExists())
+        if (!jsonDataRepository.DataFileExists())
         {
             Console.WriteLine("Файл данных не найден.");
             Console.WriteLine("Чтобы создать файл, добавьте хотя бы одну запись (пункт меню \"Добавить новое ДР\").\n");
@@ -59,7 +59,7 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
                     jsonDataRepository.SaveBirthday(birthdays);
                     break;
                 case 4:
-                    DisplayAllBirthdays(birthdays);
+                    DisplayPaginatedBirthdays(birthdays, 5);
                     break;
                 case 5:
                     int upcomingDaysCount = GetUpcomingDaysCount(7);
@@ -124,4 +124,46 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
     
     public void DisplayUpcomingBirthdays(List<Birthday> birthdays)
         => DisplayUpcomingBirthdays(birthdays, DefaultUpcomingDaysCount);
+    
+    public void DisplayPaginatedBirthdays(List<Birthday> birthdays, int pageSize = 10)
+    {
+        if (birthdays.Count == 0)
+        {
+            Console.WriteLine("Нечего отображать — список пуст.");
+            return;
+        }
+        
+        int totalItems = birthdays.Count;
+        int totalPages = (totalItems + pageSize - 1) / pageSize;
+        int currentPage = 0;
+        
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine($"Страница {currentPage + 1}/{totalPages} — записей всего {totalItems}\n");
+            
+            var pageItems = birthdays.Skip(currentPage * pageSize).Take(pageSize);
+            
+            int itemNumber = currentPage * pageSize;
+            foreach (var b in pageItems)
+            {
+                Console.WriteLine($"{++itemNumber}. {b}");
+            }
+            
+            Console.WriteLine("\n[N] — сдедующая страница, [P] — предыдущая страница, [Q] — выход");
+            var key = Console.ReadKey(true).Key;
+            if (key == ConsoleKey.N && currentPage < totalPages - 1)
+            {
+                currentPage++;
+            }
+            else if (key == ConsoleKey.P && currentPage > 0)
+            {
+                currentPage--;
+            }
+            else if (key == ConsoleKey.Q)
+            {
+                break;
+            }
+        }
+    }
 }

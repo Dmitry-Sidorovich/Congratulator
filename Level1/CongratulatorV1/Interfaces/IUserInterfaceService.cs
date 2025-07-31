@@ -9,4 +9,5 @@ public interface IUserInterfaceService
     void DisplayAllBirthdays(List<Birthday> birthdays);
     void DisplayUpcomingBirthdays(List<Birthday> birthdays);
     void DisplayUpcomingBirthdays(List<Birthday> birthdays, int upcomingDaysCount);
+    void DisplayPaginatedBirthdays(List<Birthday> birthdays, int pageSize);
 }
