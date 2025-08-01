@@ -4,17 +4,18 @@ using static CongratulatorV2.Services.ConsoleInputService;
 
 namespace CongratulatorV2.Services;
 
-public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository jsonDataRepository) : IUserInterfaceService
+public class ConsoleUIService(IBirthdayService birthdayService, IBirthdayRepository jsonBirthdayRepository) : IUserInterfaceService
 {
     private const int DefaultUpcomingDaysCount = 7;
     private const int DefaultPageSize = 5;
+    private const string FileName = "birthdays.json";
     
     public void DisplayWelcomeScreen(List<Birthday> birthdays)
     {
         Console.Clear();
         Console.WriteLine("Добро пожаловать в Поздравлятор!");
 
-        if (!jsonDataRepository.DataFileExists())
+        if (!File.Exists(FileName))
         {
             Console.WriteLine("Файл данных не найден.");
             Console.WriteLine("Чтобы создать файл, добавьте хотя бы одну запись (пункт меню \"Добавить новое ДР\").\n");
@@ -66,15 +67,15 @@ public class ConsoleUIService(IBirthdayService birthdayService, IDataRepository 
                     break;
                 case 3:
                     birthdayService.AddBirthday(birthdays);
-                    jsonDataRepository.SaveBirthday(birthdays);
+                    jsonBirthdayRepository.SaveBirthdays(birthdays);
                     break;
                 case 4:
                     birthdayService.EditBirthday(birthdays);
-                    jsonDataRepository.SaveBirthday(birthdays);
+                    jsonBirthdayRepository.SaveBirthdays(birthdays);
                     break;
                 case 5:
                     birthdayService.DeleteBirthday(birthdays);
-                    jsonDataRepository.SaveBirthday(birthdays);
+                    jsonBirthdayRepository.SaveBirthdays(birthdays);
                     break;
                 case 6:
                     DisplaySortMenu(birthdays);

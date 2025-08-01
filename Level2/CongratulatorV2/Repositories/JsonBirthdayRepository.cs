@@ -5,7 +5,7 @@ using CongratulatorV2.Models;
 
 namespace CongratulatorV2.Repositories;
 
-public class JsonDataRepository : IDataRepository
+public class JsonBirthdayRepository : IBirthdayRepository
 {
     private const string FileName = "birthdays.json";
     
@@ -38,7 +38,7 @@ public class JsonDataRepository : IDataRepository
         }
     }
     
-    public void SaveBirthday(List<Birthday> birthdays)
+    public void SaveBirthdays(List<Birthday> birthdays)
     {
         try
         {
@@ -51,10 +51,5 @@ public class JsonDataRepository : IDataRepository
         {
             Console.WriteLine($"Ошибка сохранения: {e.Message}");
         }
-    }
-
-    public bool DataFileExists()
-    {
-        return File.Exists(FileName);
     }
 }

@@ -2,6 +2,7 @@
 
 public class Birthday(string name  = "", DateTime date = default)
 {
+    public int Id { get; set; }
     public string Name { get; set; } = name;
     public DateTime Date { get; set; } = date;
     
