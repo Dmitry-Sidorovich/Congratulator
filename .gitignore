@@ -33,3 +33,14 @@ Desktop.ini
 
 # Rider caches
 .idea/
+
+# База данных
+*.db
+
+# Конфигурации с секретами  
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+
+# НО базовый файл включаем
+!appsettings.json

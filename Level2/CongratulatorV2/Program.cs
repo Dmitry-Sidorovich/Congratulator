@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false)
-    .Build();           
+    .Build();
 
 var services = new ServiceCollection();
 services.AddDbContext<AppDbContext>(options => options.UseSqlite(configuration.GetConnectionString("Default")));
