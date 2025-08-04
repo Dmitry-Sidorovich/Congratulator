@@ -1,168 +1,130 @@
 ﻿using CongratulatorV2.Interfaces;
 using CongratulatorV2.Models;
-using static CongratulatorV2.Services.ConsoleInputService;
 
 namespace CongratulatorV2.Services;
 
 public class BirthdayService : IBirthdayService
 {
     private const int DefaultUpcomingDaysCount = 7;
+    private readonly IBirthdayRepository _birthdayRepository;
+
+    public BirthdayService(IBirthdayRepository birthdayRepository)
+    {
+        _birthdayRepository = birthdayRepository;
+    }
+
+    public List<Birthday> GetAll()
+    {
+        return _birthdayRepository.GetAll();
+    }
+
+    public Birthday? GetById(int id)
+    {
+        if (id <= 0)
+        {
+            throw new ArgumentException("ID должен быть положительным числом", nameof(id));
+        }
+        return _birthdayRepository.GetById(id);
+    }
     
-    public void AddBirthday(List<Birthday> birthdays)
+    public Birthday Add(string name, DateTime birthDate)
     {
-        string name = GetName();
-        DateTime birthDate = GetBirthDate();
-        birthdays.Add(new Birthday(name, birthDate));
-
-        Console.WriteLine($"Именник {name} с датой рождения {birthDate:dd MMMM yyyy} года успешно добавлен.");
+        return _birthdayRepository.Add(name, birthDate);
     }
 
-    public void EditBirthday(List<Birthday> birthdays)
+    public Birthday Update(int id, string name, DateTime birthDate)
     {
-        if (birthdays.Count == 0)
-        {
-            Console.WriteLine("Список пуст, нечего редактировать.");
-            return;
-        }
-
-        int index = GetRecordNumber(birthdays, "редактирования");
-        if (index == 0)
-        {
-            return;
-        }
-        
-        Console.Clear();
-        var chosenBirthday = birthdays[index - 1];
-        
-        
-        if (AskYesNo($"Желаете изменить имя {chosenBirthday.Name}?"))
-        {
-            string newInputName = GetName();
-            chosenBirthday.Name = newInputName;
-            Console.WriteLine("Имя обновлено.");
-        }
-
-        if (AskYesNo($"Желаете изменить дату рождения «{chosenBirthday.Date:dd MMMM yyyy}»?"))
-        {
-            DateTime newBirthDate = GetBirthDate();
-            chosenBirthday.Date = newBirthDate;
-            Console.WriteLine("Дата рождения обновлена. ");
-        }
-
-        Console.WriteLine("Редактирование завершено.");
+        return _birthdayRepository.Update(id, name, birthDate);
     }
 
-    public void DeleteBirthday(List<Birthday> birthdays)
+    public bool Delete(int birthdayId)
     {
-        if (birthdays.Count == 0)
-        {
-            Console.WriteLine("Список пуст, нечего удалять.");
-            return;
-        }
-        
-        int index = GetRecordNumber(birthdays, "удаления");
-        if (index == 0)
-        {
-            return;
-        }
-        
-        var chosenBirthday = birthdays[index - 1];
-        if (AskYesNo($"Вы уверены, что хотите удалить \"{chosenBirthday.Name} - {chosenBirthday.Date:dd MMMM yyyy}\"?"))
-        {
-            birthdays.RemoveAt(index - 1);
-            Console.WriteLine("Запись успешно удалена.");
-        }
-        else
-        {
-            Console.WriteLine("Удаление отменено.");
-        }
+        return _birthdayRepository.Delete(birthdayId);
     }
 
-    public List<Birthday> GetUpcomingBirthdays(List<Birthday> birthdays, int upcomingDaysCount)
+    public List<Birthday> GetUpcoming(int days = DefaultUpcomingDaysCount)
     {
+        if (days < 0)
+            throw new ArgumentException("Количество дней не может быть отрицательным", nameof(days));
+
         var today = DateTime.Today;
         
-        return birthdays.Select(birthday =>
-            {
-                DateTime nextBirthday = CalculateNextBirthday(birthday, today);
-                int delta = (nextBirthday - today).Days;
-
-                return (Birthday: birthday, DaysUntil: delta);
-            })
-            .Where(birthdayInfo => birthdayInfo.DaysUntil <= upcomingDaysCount)
-            .OrderBy(birthdayInfo => birthdayInfo.DaysUntil)
-            .Select(birthdayInfo => birthdayInfo.Birthday)
+        return _birthdayRepository.GetAll()
+            .Where(b => CalculateDaysUntilBirthday(b, today) <= days) 
+            .OrderBy(b => CalculateDaysUntilBirthday(b, today))
+            .ThenBy(b => b.Name)
             .ToList();
     }
     
-    public List<Birthday> GetUpcomingBirthdays(List<Birthday> birthdays)
-        => GetUpcomingBirthdays(birthdays, DefaultUpcomingDaysCount);
-
-    public List<Birthday> SortBirthdays(List<Birthday> birthdays, SortOption sortOption)
-    { 
-        var birthdaysList = birthdays.ToList();
+    public List<Birthday> Sort(List<Birthday> birthdays, SortOption sortOption)
+    {
+        if (birthdays == null || birthdays.Count == 0)
+        {
+            return new List<Birthday>();
+        }
+        
         var today = DateTime.Today;
 
         return sortOption switch
         {
-            SortOption.ByNameAsc => birthdaysList.OrderBy(b => b.Name).ToList(),
-            SortOption.ByNameDesc => birthdaysList.OrderByDescending(b => b.Name).ToList(),
-            SortOption.ByDateAsc => birthdaysList.OrderBy(b => b.Date.Month).ThenBy(b => b.Date.Day).ToList(),
-            SortOption.ByDateDesc => birthdaysList.OrderByDescending(b => b.Date.Month).ThenByDescending(b => b.Date.Day).ToList(),
-            SortOption.ByNextAsc => birthdaysList.OrderBy(b => CalculateNextBirthday(b, today)).ToList(),
-            SortOption.ByNextDesc => birthdaysList.OrderByDescending(b => CalculateNextBirthday(b, today)).ToList(),
-            _ => birthdaysList
+            SortOption.ByNameAsc => birthdays.OrderBy(b => b.Name).ToList(),
+            SortOption.ByNameDesc => birthdays.OrderByDescending(b => b.Name).ToList(),
+            SortOption.ByDateAsc => birthdays.OrderBy(b => b.Date.Month).ThenBy(b => b.Date.Day).ToList(),
+            SortOption.ByDateDesc => birthdays.OrderByDescending(b => b.Date.Month).ThenByDescending(b => b.Date.Day).ToList(),
+            SortOption.ByNextAsc => birthdays.OrderBy(b => CalculateNextBirthday(b, today)).ToList(),
+            SortOption.ByNextDesc => birthdays.OrderByDescending(b => CalculateNextBirthday(b, today)).ToList(),
+            _ => birthdays.ToList()
         };
     }
 
-    private DateTime CalculateNextBirthday(Birthday birthday, DateTime today)
+    public List<Birthday> GetByMonth(int month)
     {
-        var nextBirthday = new DateTime(today.Year, birthday.Date.Month, birthday.Date.Day);
-        if (nextBirthday < today)
+        return _birthdayRepository.GetByMonth(month);
+    }
+
+    public List<Birthday> SearchByName(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return new List<Birthday>();
+        }
+
+        var term = searchTerm.Trim().ToLower();
+        
+        return _birthdayRepository.SearchByName(term);
+    }
+    
+    public List<Birthday> GetExpired()
+    {
+       var today = DateTime.Today;
+       var startOfYear = new DateTime(today.Year, 1, 1);
+
+       return _birthdayRepository.GetExpired(startOfYear, today);
+    }
+
+    public int Count()
+    {
+        return _birthdayRepository.Count();
+    }
+
+    public bool Exists(int birthdayId)
+    {
+        return _birthdayRepository.Exists(birthdayId);
+    }
+    
+    private DateTime CalculateNextBirthday(Birthday birthday, DateTime fromDate)
+    {
+        var nextBirthday = new DateTime(fromDate.Year, birthday.Date.Month, birthday.Date.Day);
+        if (nextBirthday < fromDate.Date)
         {
             nextBirthday = nextBirthday.AddYears(1);
         }
-
         return nextBirthday;
     }
-
-    public List<Birthday> FilterByMonth(List<Birthday> birthdays, int month)
-    {
-        return birthdays
-            .Where(b => b.Date.Month == month)
-            .OrderBy(b => b.Date.Day)
-            .ToList();
-    }
-
-    public List<Birthday> FilterByNameContains(List<Birthday> birthdays, string substring)
-    {
-        if (string.IsNullOrWhiteSpace(substring))
-        {
-            return birthdays;
-        }
-        
-        substring = substring.Trim().ToLower();
-        return birthdays
-            .Where(b=> b.Name.ToLower().Contains(substring))
-            .OrderBy(b => b.Name)
-            .ToList();
-    }
     
-    public List<Birthday> GetExpiredBirthdays(List<Birthday> birthdays)
+    private int CalculateDaysUntilBirthday(Birthday birthday, DateTime fromDate)
     {
-        var today = DateTime.Today;
-
-        return birthdays
-            .Where(b =>
-            {
-                var thisYearBirthday = new DateTime(
-                    today.Year,
-                    b.Date.Month,
-                    b.Date.Day);
-                return thisYearBirthday < today;
-            })
-            .OrderBy(b =>
-                new DateTime(today.Year, b.Date.Month, b.Date.Day))
-            .ToList();
+        var nextBirthday = CalculateNextBirthday(birthday, fromDate);
+        return (nextBirthday - fromDate).Days;
     }
 }

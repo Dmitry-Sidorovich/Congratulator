@@ -4,13 +4,16 @@ namespace CongratulatorV2.Interfaces;
 
 public interface IBirthdayService
 {
-    void AddBirthday(List<Birthday> birthdays);
-    void EditBirthday(List<Birthday> birthdays);
-    void DeleteBirthday(List<Birthday> birthdays);
-    List<Birthday> GetUpcomingBirthdays(List<Birthday> birthdays);
-    List<Birthday> GetUpcomingBirthdays(List<Birthday> birthdays, int upcomingDaysCount);
-    List<Birthday> SortBirthdays(List<Birthday> birthdays, SortOption sortOption);
-    List<Birthday> FilterByMonth(List<Birthday> birthdays, int month);
-    List<Birthday> FilterByNameContains(List<Birthday> birthdays, string substring);
-    List<Birthday> GetExpiredBirthdays(List<Birthday> birthdays);
+    List<Birthday> GetAll();
+    Birthday? GetById(int id);
+    List<Birthday> GetByMonth(int month);
+    List<Birthday> SearchByName(string searchTerm);
+    List<Birthday> GetUpcoming(int days);
+    Birthday Add(string name, DateTime birthDate);
+    Birthday Update(int id, string name, DateTime birthDate);
+    bool Delete(int id);
+    bool Exists(int id);
+    int Count();
+    List<Birthday> GetExpired();
+    List<Birthday> Sort(List<Birthday> birthdays, SortOption sortOption);
 }

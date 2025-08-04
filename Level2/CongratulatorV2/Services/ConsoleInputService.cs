@@ -31,7 +31,7 @@ public static class ConsoleInputService
                 break;
             }
                 
-            Console.WriteLine("Неверный год. Попробуйте снова.");
+            Console.WriteLine("Неверный год. Введите год от 1900 до текущего.");
         }
             
         while (true)
@@ -43,11 +43,11 @@ public static class ConsoleInputService
                 break;
             }
                 
-            Console.WriteLine("Неверный месяц. Попробуйте снова.");
+            Console.WriteLine("Неверный месяц. Введите месяц от 1 до 12.");
         }
             
         while (true)
-        {
+        {         
             Console.Write("Введите день рождения: ");
             if (int.TryParse(Console.ReadLine(), out newInputDay) 
                 && newInputDay >= 1 && newInputDay < DateTime.DaysInMonth(newInputYear, newInputMonth))
@@ -68,8 +68,7 @@ public static class ConsoleInputService
         {
             Console.WriteLine();
             Console.WriteLine(question);
-            Console.Write("1 – да, ");
-            Console.WriteLine("0 – нет.");
+            Console.WriteLine("1 – да, 0 – нет.");
             Console.Write("Ваш выбор: ");
 
             if (!int.TryParse(Console.ReadLine(), out int answer))
@@ -112,24 +111,23 @@ public static class ConsoleInputService
                 return upcomingDaysCount;
             }
             
-            Console.WriteLine("Неверный ввод. Введите неотрицательное число дней или просто нажмите Enter.");
+            Console.WriteLine("Неверный ввод. Введите неотрицательное число дней или нажмите Enter.");
         }
     }
     
     public static int GetRecordNumber(List<Birthday> birthdays, string actionName)
     {
-        int index;
         while (true)
         {
             Console.Clear();
             Console.WriteLine($"Выберите номер записи для {actionName} (0 - выход):");
             for (int i = 0; i < birthdays.Count; i++)
             {
-                Console.WriteLine($"{i + 1}. {birthdays[i]}");
+                Console.WriteLine($"{i + 1}. {birthdays[i]} [ID: {birthdays[i].Id}]");
             }
 
             Console.Write("Номер записи: ");
-            if (!int.TryParse(Console.ReadLine(), out index))
+            if (!int.TryParse(Console.ReadLine(), out int index))
             {
                 Console.WriteLine("Некорректный номер. Попробуйте снова или нажмите 0 для выхода.");
                 Console.ReadKey();

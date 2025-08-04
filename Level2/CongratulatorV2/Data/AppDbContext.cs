@@ -8,21 +8,29 @@ public class AppDbContext : DbContext
     public DbSet<Birthday> Birthdays { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-        
-    }
+    { }
     
-    protected override void OnModelCreating(ModelBuilder model)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        model.Entity<Birthday>()
-            .HasKey(b => b.Id);
+        modelBuilder.Entity<Birthday>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            
+            entity.Property(b => b.Id)
+                .ValueGeneratedOnAdd();
+          
+            entity.Property(b => b.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+            
+            entity.Property(b => b.Date)
+                .IsRequired();
 
-        model.Entity<Birthday>()
-            .Property(b => b.Name)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        model.Entity<Birthday>()
-            .HasIndex(b => b.Date);
+            entity.HasIndex(b => b.Date);
+            
+            entity.HasIndex(b => b.Name);
+        });
+        
+        base.OnModelCreating(modelBuilder);
     }
 }
